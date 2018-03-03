@@ -55,3 +55,16 @@ class PCSprite(CharacterSprite):
             self.rect.move_ip(0, -self.vy)
         if press[K_DOWN]:
             self.rect.move_ip(0, self.vy)
+
+class Shot(pygame.sprite.Sprite):
+    #弾
+    speed = 9
+    def __init__(self, pos):
+        pygame.sprite.Sprite.__init__(self, self.containers)
+        self.rect = self.image.get_rect()
+        self.rect.center = pos # 中心座標をposに
+    def update(self):
+        self.rect.move_ip(0, -self.speed)
+        if self.rect.top < 0:
+            self.kill();
+            del self
