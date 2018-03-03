@@ -24,3 +24,34 @@ while True:
                 sys.exit()
             pressed_keys = pygame.key.get_pressed()
             MyPC.move(pressed_keys)
+
+#キャラを表示したい
+#キャラクターのスプライト（クラス）を作る
+class CharacterSprite(pygame.sprite.Sprite):
+    def __init__(self, filename, x, y, vx, vy):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(filename).convert_alpha()
+        width = self.image.get_width()
+        height = self.image.get_height()
+        self.rect = Rect(x, y, width, height)
+        self.vx = vx
+        self.vy = vy
+
+    def update(self):
+        #画面からはみ出さないようにする
+        self.rect = self.rect.clamp(SCR_RECT)
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
+
+
+#プレイヤーのスプライト（クラス）を作る
+class PCSprite(CharacterSprite):
+    def move(self, press):
+        if press[K_LEFT]:
+            self.rect.move_ip(-self.vx, 0)
+        if press[K_RIGHT]:
+            self.rect.move_ip(self.vx, 0)
+        if press[K_UP]:
+            self.rect.move_ip(0, -self.vy)
+        if press[K_DOWN]:
+            self.rect.move_ip(0, self.vy)
