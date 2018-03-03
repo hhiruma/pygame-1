@@ -68,3 +68,21 @@ class Shot(pygame.sprite.Sprite):
         if self.rect.top < 0:
             self.kill();
             del self
+
+class Enemy(pygame.sprite.Sprite):
+    #エネミークラス
+    speed = 3 # 移動速度
+
+    def __init__(self):
+        #初期化処理
+        #敵は上からランダムに出てくる
+        pygame.sprite.Sprite.__init__(self, self.containers)
+        self.rect = self.image.get_rect()
+        self.rect.left = random.randrange(SCR_RECT.width - self.rect.width)
+        self.rect.bottom = SCR_RECT.top
+    def update(self):
+        #更新処理
+        #ランダムに動き回る
+        #上，右，下，左の順に設定
+        mov_vec = [(-3 * self.speed, 0),(0, 5 * self.speed), (3 * self.speed, 0)]
+        self.rect.move_ip(random.choice(mov_vec))
