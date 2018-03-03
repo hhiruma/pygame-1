@@ -66,7 +66,7 @@ class Shot(pygame.sprite.Sprite):
     def update(self):
         self.rect.move_ip(0, -self.speed)
         if self.rect.top < 0:
-            self.kill();
+            self.kill()
             del self
 
 class Enemy(pygame.sprite.Sprite):
@@ -86,3 +86,29 @@ class Enemy(pygame.sprite.Sprite):
         #上，右，下，左の順に設定
         mov_vec = [(-3 * self.speed, 0),(0, 5 * self.speed), (3 * self.speed, 0)]
         self.rect.move_ip(random.choice(mov_vec))
+
+def load_image(filename, colorkey=None):
+    # 画像をロード
+    # colorkeyは背景色
+
+    # 画像ファイルがpngかgifか判定するための正規表現
+    filecase = re.compile(r'[a-zA-Z0-9_/]+¥.png|[a-zA-Z0-9_/]+¥.gif')
+
+    try:
+        image = pygame.image.load(filename)
+    except pygame.error as message:
+        print("Cannot load image: " + filename)
+        raise SystemExit from message
+
+    #画面の拡張子によって処理を振り分け
+    is_match = filecase.match(filename)
+    if is_match:
+        image = image.convert_alpha()
+    else:
+        image = image.convert()
+
+    if colorkey is not None:
+        if colorkey is -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey, RLEACCEL)
+    return image
