@@ -47,13 +47,13 @@ class CharacterSprite(pygame.sprite.Sprite):
 #プレイヤーのスプライト（クラス）を作る
 class PCSprite(CharacterSprite):
     def move(self, press):
-        if press[K_LEFT]:
+        if press[K_a]:
             self.rect.move_ip(-self.vx, 0)
-        if press[K_RIGHT]:
+        if press[K_d]:
             self.rect.move_ip(self.vx, 0)
-        if press[K_UP]:
+        if press[K_w]:
             self.rect.move_ip(0, -self.vy)
-        if press[K_DOWN]:
+        if press[K_s]:
             self.rect.move_ip(0, self.vy)
 
 class Shot(pygame.sprite.Sprite):
