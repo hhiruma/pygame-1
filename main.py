@@ -84,8 +84,8 @@ class Enemy(pygame.sprite.Sprite):
         #更新処理
         #ランダムに動き回る
         #上，右，下，左の順に設定
-        mov_vec = [(-3 * self.speed, 0),(0, 5 * self.speed), (3 * self.speed, 0)]
-        self.rect.move_ip(random.choice(mov_vec))
+        # mov_vec = [(-3 * self.speed, 0),(0, 5 * self.speed), (3 * self.speed, 0)]
+        # self.rect.move_ip(random.choice(mov_vec))
 
 def load_image(filename, colorkey=None):
     # 画像をロード
