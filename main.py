@@ -24,3 +24,5 @@ while True:
                 sys.exit()
             pressed_keys = pygame.key.get_pressed()
             MyPC.move(pressed_keys)
+
+#キャラを表示したい
