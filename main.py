@@ -28,7 +28,8 @@ class Game:
         self.frame = 0
         while True:
             clock.tick(60)  #ループ更新
-            self.frame += 1  #経過フレーム数
+            if(self.key_is_down):
+                self.frame += 1  #フレームを1追加する
             self.update()  #情報更新
             self.draw(screen)  #描画更新
             self.key_handler()  #キーハンドラ実行
@@ -39,6 +40,10 @@ class Game:
     def init_game(self):
         #ゲーム状態をSTARTに設定
         self.game_state = START
+
+        #キーが押されているかどうかの判定の初期値をFalseに設定
+        #   (押しっぱなしの時のみframeをカウントしてキャラを足踏みさせるのに使う)
+        self.key_is_down = False
 
         #プレイヤーを作成
         self.player = PCSprite("./images/pc_img.png", 400, 500, 5, 5, DOWN, 6)
@@ -59,9 +64,13 @@ class Game:
                 pygame.quit()
                 sys.exit()
             elif event.type == KEYDOWN:
+                self.key_is_down = True
                 if event.key == K_ESCAPE:
                     pygame.quit()
                     sys.exit()
+            elif event.type == KEYUP:
+                self.key_is_down = False
+
         #playerオブジェクトに入力されたキーを渡す
         self.player.move(pygame.key.get_pressed())
 
