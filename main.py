@@ -2,31 +2,66 @@
 import pygame
 from pygame.locals import *
 import sys
+import re
 
-SCREEN_SIZE = (800,600) # スクリーンサイズ（px指定）
-#Pygame初期化
-pygame.init()
-#SCREEN_SIZEの画面作成
-screen = pygame.display.set_mode(SCREEN_SIZE)
-#タイトルバーの文字セット
-pygame.display.set_caption("初めてのシューティング")
+#ゲームの状態
+START, PLAY, GAMEOVER = (0, 1, 2)
+#スクリーンサイズ(px指定)
+SCR_RECT = Rect(0, 0, 800, 600)
 
-#ゲームイベントループ
-while True:
-    screen.fill((0,0,0)) #画面を真っ青で塗りつぶす
-    pygame.display.update() #画面を更新
-    #イベント処理
-    for event in pygame.event.get():
-        if event.type == QUIT: # 終了イベント
-            sys.exit()
-        if event.type == KEYDOWN:
-            if event.key == K_ESCAPE:
+
+#メインのGameオブジェクト
+class Game:
+    def __init__(self):
+        #各種読み込み
+        pygame.init()
+        screen = pygame.display.set_mode(SCR_RECT.size)
+        pygame.display.set_caption("初めてのシューティング")
+
+        #Gameオブジェクトの初期化
+        self.init_game()
+
+        #メインループ開始
+        clock = pygame.time.Clock()
+        while True:
+            clock.tick(60)  #ループ更新
+            self.draw(screen)  #描画更新
+            self.key_handler()  #キーハンドラ実行
+            pygame.display.update()
+
+
+    #ゲームオブジェクトを初期化
+    def init_game(self):
+        #ゲーム状態をSTARTに設定
+        self.game_state = START
+
+        #プレイヤーを作成
+        self.player = PCSprite("./images/pc_img.png", 400, 500, 3, 3)
+
+    #情報の更新
+    def update(self):
+        self.player.update()
+
+    #画面描画
+    def draw(self, screen):
+        screen.fill((0, 0, 0))
+        self.player.draw(screen)
+
+    #キーハンドラ
+    def key_handler(self):
+        for event in pygame.event.get():
+            if event.type == quit:
+                pygame.quit()
                 sys.exit()
-            pressed_keys = pygame.key.get_pressed()
-            MyPC.move(pressed_keys)
+            elif event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+        #playerオブジェクトに入力されたキーを渡す
+        self.player.move(pygame.key.get_pressed())
 
-#キャラを表示したい
-#キャラクターのスプライト（クラス）を作る
+
+# キャラクターのスプライトクラス
 class CharacterSprite(pygame.sprite.Sprite):
     def __init__(self, filename, x, y, vx, vy):
         pygame.sprite.Sprite.__init__(self)
@@ -40,11 +75,12 @@ class CharacterSprite(pygame.sprite.Sprite):
     def update(self):
         #画面からはみ出さないようにする
         self.rect = self.rect.clamp(SCR_RECT)
+
     def draw(self, screen):
         screen.blit(self.image, self.rect)
 
 
-#プレイヤーのスプライト（クラス）を作る
+#プレイヤーのスプライトクラス
 class PCSprite(CharacterSprite):
     def move(self, press):
         if press[K_a]:
@@ -56,8 +92,10 @@ class PCSprite(CharacterSprite):
         if press[K_s]:
             self.rect.move_ip(0, self.vy)
 
+
+#弾のスプライトクラス
 class Shot(pygame.sprite.Sprite):
-    #弾
+    #弾速
     speed = 9
     def __init__(self, pos):
         pygame.sprite.Sprite.__init__(self, self.containers)
@@ -69,46 +107,5 @@ class Shot(pygame.sprite.Sprite):
             self.kill()
             del self
 
-class Enemy(pygame.sprite.Sprite):
-    #エネミークラス
-    speed = 3 # 移動速度
-
-    def __init__(self):
-        #初期化処理
-        #敵は上からランダムに出てくる
-        pygame.sprite.Sprite.__init__(self, self.containers)
-        self.rect = self.image.get_rect()
-        self.rect.left = random.randrange(SCR_RECT.width - self.rect.width)
-        self.rect.bottom = SCR_RECT.top
-    def update(self):
-        #更新処理
-        #ランダムに動き回る
-        #上，右，下，左の順に設定
-        mov_vec = [(-3 * self.speed, 0),(0, 5 * self.speed), (3 * self.speed, 0)]
-        self.rect.move_ip(random.choice(mov_vec))
-
-def load_image(filename, colorkey=None):
-    # 画像をロード
-    # colorkeyは背景色
-
-    # 画像ファイルがpngかgifか判定するための正規表現
-    filecase = re.compile(r'[a-zA-Z0-9_/]+¥.png|[a-zA-Z0-9_/]+¥.gif')
-
-    try:
-        image = pygame.image.load(filename)
-    except pygame.error as message:
-        print("Cannot load image: " + filename)
-        raise SystemExit from message
-
-    #画面の拡張子によって処理を振り分け
-    is_match = filecase.match(filename)
-    if is_match:
-        image = image.convert_alpha()
-    else:
-        image = image.convert()
-
-    if colorkey is not None:
-        if colorkey is -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey, RLEACCEL)
-    return image
+if __name__ == '__main__':
+    Game()
