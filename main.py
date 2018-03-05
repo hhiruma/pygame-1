@@ -32,8 +32,8 @@ class Game:
                 self.frame += 1  #フレームを1追加する
             self.update()  #情報更新
             self.draw(screen)  #描画更新
-            self.key_handler()  #キーハンドラ実行
             pygame.display.update()
+            self.key_handler()  #キーハンドラ実行
 
 
     #ゲームオブジェクトを初期化
@@ -55,7 +55,19 @@ class Game:
     #画面描画
     def draw(self, screen):
         screen.fill((0, 0, 0))
-        self.player.draw(screen)
+        if self.game_state == START:
+            #とりあえずのタイトル
+            #fontオブジェクトの作成
+            sysfont = pygame.font.SysFont(None, 80)
+            #テキストのレンダリング
+            moji = sysfont.render("START", False, (255,0,0))
+            #表示
+            screen.blit(moji, (300,270))
+        if self.game_state == PLAY:
+            self.player.draw(screen)
+        if self.game_state == GAMEOVER:
+            #一旦省略
+            pass
 
     #キーハンドラ
     def key_handler(self):
@@ -64,10 +76,15 @@ class Game:
                 pygame.quit()
                 sys.exit()
             elif event.type == KEYDOWN:
-                self.key_is_down = True
                 if event.key == K_ESCAPE:
                     pygame.quit()
                     sys.exit()
+                elif event.key == K_SPACE:
+                    if self.game_state == START:
+                        self.game_state = PLAY
+                    elif self.game_state == GAMEOVER:
+                        self.game_state = START
+                self.key_is_down = True
             elif event.type == KEYUP:
                 self.key_is_down = False
 
