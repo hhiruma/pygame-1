@@ -8,7 +8,7 @@ import os
 #ゲームの状態
 START, PLAY, GAMEOVER = (0, 1, 2)
 #方向の状態
-RIGHT, LEFT, DOWN, UP = (0, 1, 2, 3)
+DOWN, LEFT, RIGHT, UP = (0, 1, 2, 3)
 #スクリーンサイズ(px指定)
 SCR_RECT = Rect(0, 0, 800, 600)
 
@@ -54,6 +54,7 @@ class Game:
     #情報の更新
     def update(self):
         self.player.update(self.frame)
+        self.shot.update()
 
     #画面描画
     def draw(self, screen):
@@ -77,6 +78,7 @@ class Game:
 
         #playerオブジェクトに入力されたキーを渡す
         self.player.move(pygame.key.get_pressed())
+        self.shot.move(pygame.key.get_pressed(), self.player)
 
 
 # キャラクターのスプライトクラス
@@ -109,31 +111,70 @@ class PCSprite(CharacterSprite):
             self.direction = LEFT
             self.rect.move_ip(-self.vx, 0)
         if press[K_d]:
-            self.direction = DOWN
+            self.direction = RIGHT
             self.rect.move_ip(self.vx, 0)
         if press[K_w]:
             self.direction = UP
             self.rect.move_ip(0, -self.vy)
         if press[K_s]:
-            self.direction = RIGHT
+            self.direction = DOWN
             self.rect.move_ip(0, self.vy)
 
 
 #弾のスプライトクラス
 class Shot(pygame.sprite.Sprite):
     #弾速
-    speed = 9
+    speed = 20
     def __init__(self, pos):
         # pygame.sprite.Sprite.__init__(self, self.containers)
-        self.imageList = split_image(load_image("fire.png"), 2, 8)
+        self.imageList = split_image(load_image("fire.png"), 8, 2)
         self.image = self.imageList[0]
         self.rect = self.image.get_rect()
         self.rect.center = pos # 中心座標をposに
+        self.direction = RIGHT
+        self.shooting = False
+        self.frame = 0
+        self.animSpeed = 3
+
+    def move(self, press, player):
+        if press[K_LEFT]:
+            self.direction = LEFT
+            player.direction = LEFT
+            self.rect.center = player.rect.center
+            self.shooting = True
+        if press[K_RIGHT]:
+            self.direction = RIGHT
+            player.direction = RIGHT
+            self.rect.center = player.rect.center
+            self.shooting = True
+        if press[K_UP]:
+            self.direction = UP
+            player.direction = UP
+            self.rect.center = player.rect.center
+            self.shooting = True
+        if press[K_DOWN]:
+            self.direction = DOWN
+            player.direction = DOWN
+            self.rect.center = player.rect.center
+            self.shooting = True
+
+
     def update(self):
-        self.rect.move_ip(0, -self.speed)
-        if self.rect.top < 0:
-            self.kill()
-            del self
+        if self.shooting == True:
+            self.frame += 1
+            self.image = self.imageList[self.frame/self.animSpeed%4]
+            if self.direction == DOWN:
+                self.rect.move_ip(0, self.speed)
+            if self.direction == LEFT:
+                self.rect.move_ip(-self.speed, 0)
+            if self.direction == RIGHT:
+                self.rect.move_ip(self.speed, 0)
+            if self.direction == UP:
+                self.rect.move_ip(0, -self.speed)
+            # if self.rect.top < 0:
+            #     self.kill()
+            #     del self
+
     def draw(self, screen):
         screen.blit(self.image, self.rect)
 
