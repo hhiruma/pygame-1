@@ -80,7 +80,7 @@ class CharacterSprite(pygame.sprite.Sprite):
     def __init__(self, filename, x, y, vx, vy, direction, animSpeed):
         pygame.sprite.Sprite.__init__(self)
         self.direction = direction
-        self.imageList = split_image(load_image("player.png"))
+        self.imageList = split_image(load_image("player.png"), 4, 4)
         self.image = self.imageList[0]
         width = self.image.get_width()
         height = self.image.get_height()
@@ -145,15 +145,22 @@ def load_image(filename, colorkey=None):
         image.set_colorkey(colorkey, RLEACCEL)
     return image
 
-def split_image(image):
-    """128x128のキャラクターイメージを32x32の16枚のイメージに分割
-    分割したイメージを格納したリストを返す"""
-    GS = 32
+#画像を分割する
+def split_image(image, vertical, horizontal):
+    # @params horizontal: 横方向の画像の数
+    # @params vertical: 縦方向の画像の数
+
+    # imgWidth: 各画像の幅
+    # imgHeight: 各画像の高さ
+    imgWidth = image.get_width() / horizontal
+    imgHeight = image.get_height() / vertical
     imageList = []
-    for i in range(0, 128, GS):
-        for j in range(0, 128, GS):
-            surface = pygame.Surface((GS,GS))
-            surface.blit(image, (0,0), (j,i,GS,GS))
+
+    # MEMO: imgHeight と imgWidth　位置逆かもしれない
+    for i in range(0, 128, imgHeight):
+        for j in range(0, 128, imgWidth):
+            surface = pygame.Surface((imgWidth,imgHeight))
+            surface.blit(image, (0,0), (j,i,imgWidth,imgHeight))
             surface.set_colorkey(surface.get_at((0,0)), RLEACCEL)
             surface.convert()
             imageList.append(surface)
