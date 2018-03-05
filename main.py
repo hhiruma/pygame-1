@@ -46,23 +46,20 @@ class Game:
         self.key_is_down = False
 
         #プレイヤーを作成
-        self.player = PCSprite("player.png", 4, 4, 400, 500, 5, 5, DOWN, 6)
-
-        #試しに弾も作成
-        # self.shot = Shot((100, 100))
+        self.player = PCSprite("player.png", 400, 500, 5, 6, DOWN)
 
     #情報の更新
     def update(self):
+        #プレイヤー関連の情報を更新
         self.player.update(self.frame)
         self.player.shotGroup.update()
-        # self.shot.update()
 
     #画面描画
     def draw(self, screen):
         screen.fill((0, 0, 0))
+        #プレイヤー関連の描画
         self.player.draw(screen)
         self.player.shotGroup.draw(screen)
-        # self.shot.draw(screen)
 
     #キーハンドラ
     def key_handler(self):
@@ -81,29 +78,32 @@ class Game:
         #playerオブジェクトに入力されたキーを渡す
         self.player.move(pygame.key.get_pressed())
         self.player.shoot(pygame.key.get_pressed())
-        # self.shot.move(pygame.key.get_pressed(), self.player)
 
 
 # キャラクターのスプライトクラス
 class CharacterSprite(pygame.sprite.Sprite):
-    def __init__(self, filename, iw, ih, x, y, vx, vy, direction, animSpeed):
+    def __init__(self, filename, x, y, moveSpeed, animRate, direction):
         pygame.sprite.Sprite.__init__(self)
-        self.direction = direction
+
+        #キャラ本体の見た目の初期設定
         self.imageList = split_image(load_image(filename), 4, 4)
         self.image = self.imageList[0]
-        width = self.image.get_width()
-        height = self.image.get_height()
-        self.rect = Rect(x, y, width, height)
-        self.vx = vx
-        self.vy = vy
-        self.animSpeed = animSpeed
+        self.rect = Rect(x, y, self.image.get_width(), self.image.get_height())
+
+        #キャラの移動関連
+        self.moveSpeed = moveSpeed
+        self.direction = direction
+        self.animRate = animRate
+
+        #射撃関連
         self.shotGroup = pygame.sprite.RenderUpdates()
         self.shooting = False
 
     def update(self, frame):
         #画面からはみ出さないようにする
         self.rect = self.rect.clamp(SCR_RECT)
-        self.image = self.imageList[self.direction*4+frame/self.animSpeed%4]
+        #[animRate]回に1回 imageをimagelistから更新する
+        self.image = self.imageList[self.direction*4+frame/self.animRate%4]
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
@@ -114,82 +114,89 @@ class PCSprite(CharacterSprite):
     def move(self, press):
         if press[K_a]:
             self.direction = LEFT
-            self.rect.move_ip(-self.vx, 0)
+            self.rect.move_ip(-self.moveSpeed, 0)
         if press[K_d]:
             self.direction = RIGHT
-            self.rect.move_ip(self.vx, 0)
+            self.rect.move_ip(self.moveSpeed, 0)
         if press[K_w]:
             self.direction = UP
-            self.rect.move_ip(0, -self.vy)
+            self.rect.move_ip(0, -self.moveSpeed)
         if press[K_s]:
             self.direction = DOWN
-            self.rect.move_ip(0, self.vy)
+            self.rect.move_ip(0, self.moveSpeed)
 
     def shoot(self, press):
         #矢印キーが押されたらshotオブジェクトを新たに生成
         if press[K_LEFT] or press[K_RIGHT] or press[K_UP] or press[K_DOWN]:
+            #すでに「矢印ボタンを長押し中」でなかったら if文内を実行
             if not self.shooting:
-                self.shooting = True
-                shot = Shot(self.rect.center)
+                self.shooting = True  #「矢印ボタン長押し中」に設定
+
+                #スコープをif文内に制限してshotオブジェクトを作成
+                shot = Shot(self.rect.center, "fire.png")
+
+                #弾を動かし始める（PCSpriteオブジェクトを引数として渡す）
                 shot.move(press, self)
+
+                #キャラクターのスプライトのshotGroup（スプライトグループ）に追加
                 self.shotGroup.add(shot)
         else:
+            #矢印以外を押していたら「矢印ボタン長押し中」を解除
             self.shooting = False
 
 
 #弾のスプライトクラス
 class Shot(pygame.sprite.Sprite):
-    #弾速
-    speed = 20
-    def __init__(self, pos):
+    def __init__(self, pos, filename):
         pygame.sprite.Sprite.__init__(self)
-        self.imageList = split_image(load_image("fire.png"), 8, 2)
+
+        #弾本体の見た目の初期設定
+        self.imageList = split_image(load_image(filename), 8, 2)
         self.image = self.imageList[0]
         self.rect = self.image.get_rect()
         self.rect.center = pos # 中心座標をposに
+
+        #弾の移動関連
         self.direction = RIGHT
-        self.shooting = False
+        self.speed = 20
+        self.animRate = 3
         self.frame = 0
-        self.animSpeed = 3
 
     def move(self, press, player):
+        #打ち始めはプレイヤーと座標を被らせる
+        self.rect.center = player.rect.center
+
+        #矢印キーを押したら2つの方向を同時に変化させる
+        #    self.direction : 撃つ方向
+        #    player.direction : キャラが向く方向
         if press[K_LEFT]:
-            self.direction = LEFT
-            player.direction = LEFT
-            self.rect.center = player.rect.center
-            self.shooting = True
+            self.direction = player.direction = LEFT
         if press[K_RIGHT]:
-            self.direction = RIGHT
-            player.direction = RIGHT
-            self.rect.center = player.rect.center
-            self.shooting = True
+            self.direction = player.direction = RIGHT
         if press[K_UP]:
-            self.direction = UP
-            player.direction = UP
-            self.rect.center = player.rect.center
-            self.shooting = True
+            self.direction = player.direction = UP
         if press[K_DOWN]:
-            self.direction = DOWN
-            player.direction = DOWN
-            self.rect.center = player.rect.center
-            self.shooting = True
+            self.direction = player.direction = DOWN
 
 
     def update(self):
-        if self.shooting == True:
-            self.frame += 1
-            self.image = self.imageList[self.frame/self.animSpeed%4]
-            if self.direction == DOWN:
-                self.rect.move_ip(0, self.speed)
-            if self.direction == LEFT:
-                self.rect.move_ip(-self.speed, 0)
-            if self.direction == RIGHT:
-                self.rect.move_ip(self.speed, 0)
-            if self.direction == UP:
-                self.rect.move_ip(0, -self.speed)
-            # if self.rect.top < 0:
-            #     self.kill()
-            #     del self
+        #フレームを更新
+        self.frame += 1
+        #[animRate]回に1回 imageをimagelistから更新する
+        self.image = self.imageList[self.frame/self.animRate%4]
+
+        #初期化時に設定したスピードで弾を動かす
+        if self.direction == DOWN:
+            self.rect.move_ip(0, self.speed)
+        if self.direction == LEFT:
+            self.rect.move_ip(-self.speed, 0)
+        if self.direction == RIGHT:
+            self.rect.move_ip(self.speed, 0)
+        if self.direction == UP:
+            self.rect.move_ip(0, -self.speed)
+        # if self.rect.top < 0:
+        #     self.kill()
+        #     del self
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
