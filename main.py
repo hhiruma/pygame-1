@@ -49,18 +49,20 @@ class Game:
         self.player = PCSprite("player.png", 4, 4, 400, 500, 5, 5, DOWN, 6)
 
         #試しに弾も作成
-        self.shot = Shot((100, 100))
+        # self.shot = Shot((100, 100))
 
     #情報の更新
     def update(self):
         self.player.update(self.frame)
-        self.shot.update()
+        self.player.shotGroup.update()
+        # self.shot.update()
 
     #画面描画
     def draw(self, screen):
         screen.fill((0, 0, 0))
         self.player.draw(screen)
-        self.shot.draw(screen)
+        self.player.shotGroup.draw(screen)
+        # self.shot.draw(screen)
 
     #キーハンドラ
     def key_handler(self):
@@ -78,7 +80,8 @@ class Game:
 
         #playerオブジェクトに入力されたキーを渡す
         self.player.move(pygame.key.get_pressed())
-        self.shot.move(pygame.key.get_pressed(), self.player)
+        self.player.shoot(pygame.key.get_pressed())
+        # self.shot.move(pygame.key.get_pressed(), self.player)
 
 
 # キャラクターのスプライトクラス
@@ -94,6 +97,8 @@ class CharacterSprite(pygame.sprite.Sprite):
         self.vx = vx
         self.vy = vy
         self.animSpeed = animSpeed
+        self.shotGroup = pygame.sprite.RenderUpdates()
+        self.shooting = False
 
     def update(self, frame):
         #画面からはみ出さないようにする
@@ -120,13 +125,24 @@ class PCSprite(CharacterSprite):
             self.direction = DOWN
             self.rect.move_ip(0, self.vy)
 
+    def shoot(self, press):
+        #矢印キーが押されたらshotオブジェクトを新たに生成
+        if press[K_LEFT] or press[K_RIGHT] or press[K_UP] or press[K_DOWN]:
+            if not self.shooting:
+                self.shooting = True
+                shot = Shot(self.rect.center)
+                shot.move(press, self)
+                self.shotGroup.add(shot)
+        else:
+            self.shooting = False
+
 
 #弾のスプライトクラス
 class Shot(pygame.sprite.Sprite):
     #弾速
     speed = 20
     def __init__(self, pos):
-        # pygame.sprite.Sprite.__init__(self, self.containers)
+        pygame.sprite.Sprite.__init__(self)
         self.imageList = split_image(load_image("fire.png"), 8, 2)
         self.image = self.imageList[0]
         self.rect = self.image.get_rect()
