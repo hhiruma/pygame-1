@@ -55,6 +55,7 @@ class Game:
     #画面描画
     def draw(self, screen):
         screen.fill((0, 0, 0))
+        #画面遷移の仕組み
         if self.game_state == START:
             #とりあえずのタイトル
             #fontオブジェクトの作成
@@ -64,6 +65,7 @@ class Game:
             #表示
             screen.blit(moji, (300,270))
         if self.game_state == PLAY:
+            #実際のゲーム画面で更新するものはここ
             self.player.draw(screen)
         if self.game_state == GAMEOVER:
             #一旦省略
@@ -79,6 +81,7 @@ class Game:
                 if event.key == K_ESCAPE:
                     pygame.quit()
                     sys.exit()
+                    #spaceで画面遷移するようにした
                 elif event.key == K_SPACE:
                     if self.game_state == START:
                         self.game_state = PLAY
