@@ -46,7 +46,10 @@ class Game:
         self.key_is_down = False
 
         #プレイヤーを作成
-        self.player = PCSprite("./images/pc_img.png", 400, 500, 5, 5, DOWN, 6)
+        self.player = PCSprite("player.png", 4, 4, 400, 500, 5, 5, DOWN, 6)
+
+        #試しに弾も作成
+        self.shot = Shot((100, 100))
 
     #情報の更新
     def update(self):
@@ -56,6 +59,7 @@ class Game:
     def draw(self, screen):
         screen.fill((0, 0, 0))
         self.player.draw(screen)
+        self.shot.draw(screen)
 
     #キーハンドラ
     def key_handler(self):
@@ -77,10 +81,10 @@ class Game:
 
 # キャラクターのスプライトクラス
 class CharacterSprite(pygame.sprite.Sprite):
-    def __init__(self, filename, x, y, vx, vy, direction, animSpeed):
+    def __init__(self, filename, iw, ih, x, y, vx, vy, direction, animSpeed):
         pygame.sprite.Sprite.__init__(self)
         self.direction = direction
-        self.imageList = split_image(load_image("player.png"), 4, 4)
+        self.imageList = split_image(load_image(filename), 4, 4)
         self.image = self.imageList[0]
         width = self.image.get_width()
         height = self.image.get_height()
@@ -120,7 +124,9 @@ class Shot(pygame.sprite.Sprite):
     #弾速
     speed = 9
     def __init__(self, pos):
-        pygame.sprite.Sprite.__init__(self, self.containers)
+        # pygame.sprite.Sprite.__init__(self, self.containers)
+        self.imageList = split_image(load_image("fire.png"), 2, 8)
+        self.image = self.imageList[0]
         self.rect = self.image.get_rect()
         self.rect.center = pos # 中心座標をposに
     def update(self):
@@ -128,6 +134,8 @@ class Shot(pygame.sprite.Sprite):
         if self.rect.top < 0:
             self.kill()
             del self
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
 
 
 def load_image(filename, colorkey=None):
@@ -145,22 +153,31 @@ def load_image(filename, colorkey=None):
         image.set_colorkey(colorkey, RLEACCEL)
     return image
 
+
 #画像を分割する
-def split_image(image, vertical, horizontal):
+def split_image(image, imgRow, imgColumn):
     # @params horizontal: 横方向の画像の数
     # @params vertical: 縦方向の画像の数
 
-    # imgWidth: 各画像の幅
-    # imgHeight: 各画像の高さ
-    imgWidth = image.get_width() / horizontal
-    imgHeight = image.get_height() / vertical
+    # imgW: 元画像の幅
+    # imgH: 元画像の高さ
+    imgW = image.get_width()
+    imgH = image.get_height()
+
+    # singleImgW: 分割後の画像の幅
+    # singleImgH: 分割後の画像の高さ
+    singleImgW = imgW / imgRow
+    singleImgH = imgH / imgColumn
+
+    # imageListに分割されたイメージのリストが格納される
     imageList = []
 
     # MEMO: imgHeight と imgWidth　位置逆かもしれない
-    for i in range(0, 128, imgHeight):
-        for j in range(0, 128, imgWidth):
-            surface = pygame.Surface((imgWidth,imgHeight))
-            surface.blit(image, (0,0), (j,i,imgWidth,imgHeight))
+    # fix this 128
+    for i in range(0, imgW, singleImgW):
+        for j in range(0, imgH, singleImgH):
+            surface = pygame.Surface((singleImgW,singleImgH))
+            surface.blit(image, (0,0), (j,i,singleImgW,singleImgH))
             surface.set_colorkey(surface.get_at((0,0)), RLEACCEL)
             surface.convert()
             imageList.append(surface)
