@@ -67,6 +67,7 @@ class Game:
         if self.game_state == PLAY:
             #実際のゲーム画面で更新するものはここ
             self.player.draw(screen)
+            self.player.shotGroup.draw(screen)
         if self.game_state == GAMEOVER:
             #一旦省略
             pass
