@@ -54,9 +54,10 @@ class Shot(pygame.sprite.Sprite):
             self.rect.move_ip(self.speed, 0)
         if self.direction == UP:
             self.rect.move_ip(0, -self.speed)
-        # if self.rect.top < 0:
-        #     self.kill()
-        #     del self
+        #上下左右超えた弾を消す
+        if self.rect.bottom < 0 or self.rect.top > SCR_RECT.bottom or self.rect.right < 0 or self.rect.left > SCR_RECT.right:
+            self.kill()
+            del self
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
