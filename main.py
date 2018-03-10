@@ -7,8 +7,9 @@ import os
 
 from PCSpriteClass import PCSprite
 from ShotClass import Shot
-from imageFuncs import load_image, split_image
+from imageFuncs import load_image, split_image, draw_bg
 from constVals import *
+from config import *
 
 #メインのGameオブジェクト
 class Game:
@@ -46,6 +47,32 @@ class Game:
         #プレイヤーを作成
         self.player = PCSprite("player.png", 400, 500, 5, 6, DOWN)
 
+        #背景タイルリスト
+        self.img_list = [
+            load_image('bg/white_tile.png'),
+            load_image('bg/black_tile.png')
+        ]
+
+        #背景状態
+        self.bg_map = np.array([
+        #    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], #1
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #2
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #3
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #4
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #5
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #6
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #7
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #8
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #9
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #10
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #11
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #12
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #13
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], #14
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], #15
+        ])
+
     #情報の更新
     def update(self):
         #プレイヤー関連の情報を更新
@@ -66,6 +93,7 @@ class Game:
             screen.blit(moji, (300,270))
         if self.game_state == PLAY:
             #実際のゲーム画面で更新するものはここ
+            draw_bg(screen, self.img_list, self.bg_map)
             self.player.draw(screen)
             self.player.shotGroup.draw(screen)
         if self.game_state == GAMEOVER:

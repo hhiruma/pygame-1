@@ -4,6 +4,7 @@ from pygame.locals import *
 
 from imageFuncs import load_image, split_image
 from constVals import *
+from config import *
 
 # キャラクターのスプライトクラス
 class CharacterSprite(pygame.sprite.Sprite):
