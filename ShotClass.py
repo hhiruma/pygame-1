@@ -40,7 +40,7 @@ class Shot(pygame.sprite.Sprite):
             self.direction = player.direction = DOWN
 
 
-    def update(self):
+    def update(self, bg_map):
         #フレームを更新
         self.frame += 1
         #[animRate]回に1回 imageをimagelistから更新する
@@ -55,8 +55,26 @@ class Shot(pygame.sprite.Sprite):
             self.rect.move_ip(self.speed, 0)
         if self.direction == UP:
             self.rect.move_ip(0, -self.speed)
+
+        #自分の座標取得
+        map_x = self.rect.centerx
+        map_y = self.rect.centery
+        self_x = int(map_x / BG_TILE_SIZE[0])
+        self_y = int(map_y / BG_TILE_SIZE[1])
+
+        #自分の座標に対してscreenのmapの値が0だったら2に変更して燃えるエフェクトにする
+        if bg_map[self_y][self_x] == 0:
+            bg_map[self_y][self_x] = 2
+            #スレッドに登録する
+
+
         #上下左右超えた弾を消す
         if self.rect.bottom < 0 or self.rect.top > SCR_RECT.bottom or self.rect.right < 0 or self.rect.left > SCR_RECT.right:
+            self.kill()
+            del self
+
+        #mapの値が1の座標になったら消す
+        if bg_map[self_y][self_x] == 1:
             self.kill()
             del self
 

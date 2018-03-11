@@ -50,7 +50,8 @@ class Game:
         #背景タイルリスト
         self.img_list = [
             load_image('bg/white_tile.png'),
-            load_image('bg/black_tile.png')
+            load_image('bg/black_tile.png'),
+            load_image('bg/red_tile.png')
         ]
 
         #背景状態
@@ -77,7 +78,7 @@ class Game:
     def update(self):
         #プレイヤー関連の情報を更新
         self.player.update(self.frame)
-        self.player.shotGroup.update()
+        self.player.shotGroup.update(self.bg_map)
 
     #画面描画
     def draw(self, screen):
