@@ -4,6 +4,8 @@ from pygame.locals import *
 import sys
 import re
 import os
+from multiprocessing import Queue
+import threading
 
 from PCSpriteClass import PCSprite
 from ShotClass import Shot
@@ -50,7 +52,8 @@ class Game:
         #背景タイルリスト
         self.img_list = [
             load_image('bg/white_tile.png'),
-            load_image('bg/black_tile.png')
+            load_image('bg/black_tile.png'),
+            load_image('bg/red_tile.png')
         ]
 
         #背景状態
@@ -73,11 +76,24 @@ class Game:
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], #15
         ])
 
+        #背景処理用のQueueオブジェクト
+        self.bg_queue = Queue()
+
     #情報の更新
     def update(self):
         #プレイヤー関連の情報を更新
         self.player.update(self.frame)
-        self.player.shotGroup.update()
+        self.player.shotGroup.update(self.bg_map, self.bg_queue)
+
+        #キューの中身を取り出す
+        while not self.bg_queue.empty():
+            #座標(coord)をbg_queueから1つ取り出す
+            coord = self.bg_queue.get()
+            #スレッドを一つ立てて、コールバックにShotクラスのクラスメソッドfireBgEffectを渡してスタートさせる
+            # 　@params coord: 座標
+            #   @params self.bg_map: 操作対象のmapデータ
+            t = threading.Thread(target=Shot.fireBgEffect, args=(coord, self.bg_map))
+            t.start()
 
     #画面描画
     def draw(self, screen):
