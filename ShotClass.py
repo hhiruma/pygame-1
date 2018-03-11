@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pygame,math
 from pygame.locals import *
+import time
 
 from imageFuncs import load_image, split_image
 from constVals import *
@@ -40,7 +41,7 @@ class Shot(pygame.sprite.Sprite):
             self.direction = player.direction = DOWN
 
 
-    def update(self, bg_map):
+    def update(self, bg_map, bg_queue):
         #フレームを更新
         self.frame += 1
         #[animRate]回に1回 imageをimagelistから更新する
@@ -65,8 +66,8 @@ class Shot(pygame.sprite.Sprite):
         #自分の座標に対してscreenのmapの値が0だったら2に変更して燃えるエフェクトにする
         if bg_map[self_y][self_x] == 0:
             bg_map[self_y][self_x] = 2
-            #スレッドに登録する
-
+            #キューに登録する
+            bg_queue.put((self_x, self_y))
 
         #上下左右超えた弾を消す
         if self.rect.bottom < 0 or self.rect.top > SCR_RECT.bottom or self.rect.right < 0 or self.rect.left > SCR_RECT.right:
@@ -80,3 +81,9 @@ class Shot(pygame.sprite.Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+
+    #ファイアー様の背景処理ようのコールバック関数
+    @classmethod
+    def fireBgEffect(self, tmp, bg_map):
+        time.sleep(1)
+        bg_map[tmp[1]][tmp[0]] = 0
