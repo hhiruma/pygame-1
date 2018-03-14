@@ -8,6 +8,7 @@ from multiprocessing import Queue
 import threading
 
 from PCSpriteClass import PCSprite
+from ECSpriteClass import ECSprite
 from ShotClass import Shot
 from imageFuncs import load_image, split_image, draw_bg
 from constVals import *
@@ -31,6 +32,8 @@ class Game:
             clock.tick(60)  #ループ更新
             if(self.key_is_down):
                 self.frame += 1  #フレームを1追加する
+                #プレイヤーが動くと（プレイヤーに何か入力があると）敵も動くようにした
+                self.enemy.move()
             self.update()  #情報更新
             self.draw(screen)  #描画更新
             pygame.display.update()
@@ -47,7 +50,10 @@ class Game:
         self.key_is_down = False
 
         #プレイヤーを作成
-        self.player = PCSprite("player.png", 400, 500, 5, 6, DOWN)
+        self.player = PCSprite("player.png", 400, 250, 5, 6, DOWN)
+
+        #敵を作成，一応enemy.pngを用意したがサイズが合わず断念
+        self.enemy = ECSprite("player.png", 200, 250, 5, 6, DOWN)
 
         #背景タイルリスト
         self.img_list = [
@@ -85,6 +91,9 @@ class Game:
         self.player.update(self.frame)
         self.player.shotGroup.update(self.bg_map, self.bg_queue)
 
+        #敵関連の情報を更新
+        self.enemy.update(self.frame)
+
         #キューの中身を取り出す
         while not self.bg_queue.empty():
             #座標(coord)をbg_queueから1つ取り出す
@@ -112,6 +121,7 @@ class Game:
             draw_bg(screen, self.img_list, self.bg_map)
             self.player.draw(screen)
             self.player.shotGroup.draw(screen)
+            self.enemy.draw(screen)
         if self.game_state == GAMEOVER:
             #一旦省略
             pass
@@ -119,7 +129,7 @@ class Game:
     #キーハンドラ
     def key_handler(self):
         for event in pygame.event.get():
-            if event.type == quit:
+            if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == KEYDOWN:
