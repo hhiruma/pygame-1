@@ -63,6 +63,12 @@ class Shot(pygame.sprite.Sprite):
         self_x = int(map_x / BG_TILE_SIZE[0])
         self_y = int(map_y / BG_TILE_SIZE[1])
 
+        #プレイヤーが端にいるときの弾の配列超えエラーを防ぐ（）
+        if 15 <= self_y:
+            self_y -= 1
+        elif 20 <= self_x:
+            self_x -= 1
+
         #自分の座標に対してscreenのmapの値が0だったら2に変更して燃えるエフェクトにする
         if bg_map[self_y][self_x] == 0:
             bg_map[self_y][self_x] = 2
